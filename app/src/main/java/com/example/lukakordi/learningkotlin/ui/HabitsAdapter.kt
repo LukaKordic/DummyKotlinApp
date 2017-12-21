@@ -1,5 +1,6 @@
 package com.example.lukakordi.learningkotlin.ui
 
+import android.net.Uri
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -23,6 +24,7 @@ class HabitsAdapter(private val habits: List<Habit>) : RecyclerView.Adapter<Habi
             val habit = habits[position]
             holder.card.habitTitle.text = habit.title
             holder.card.description.text = habit.description
+            holder.card.icon.setImageURI(Uri.parse(habit.imagePath))
         }
     }
 

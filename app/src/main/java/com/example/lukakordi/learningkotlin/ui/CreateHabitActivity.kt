@@ -19,7 +19,7 @@ import java.io.IOException
 class CreateHabitActivity : AppCompatActivity() {
 
     private val CHOOSE_IMAGE_REQUEST = 1
-    private var imageBitmap: Bitmap? = null
+    private var imageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,14 +39,13 @@ class CreateHabitActivity : AppCompatActivity() {
                 val realmInstance = RealmSingle.getRealmInstance(this)
                 realmInstance.executeTransaction {
                     realmInstance.copyToRealmOrUpdate(Habit(newHabitTitle.text.toString(),
-                            newHabitDescription.text.toString()))
+                            newHabitDescription.text.toString(), imageUri.toString()))
                 }
                 startActivity(MainActivity.getLaunchIntent(this))
-            } else if (imageBitmap == null) {
-                displayErrorMessage("Add a motivating picture to your habit")
-            } else {
+            } else if (newHabitTitle.isBlank() || newHabitDescription.isBlank())
                 displayErrorMessage("Your habit needs an engaging title and description")
-            }
+            else
+                displayErrorMessage("Add a motivating picture to your habit")
         }
     }
 
@@ -55,24 +54,15 @@ class CreateHabitActivity : AppCompatActivity() {
         error.visibility = View.VISIBLE
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == CHOOSE_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.data != null) {
-            val bitmap = tryReadBitmap(data.data)
-            bitmap?.let {
-                this.imageBitmap = bitmap
-                newHabitIcon.setImageBitmap(bitmap)
+        if (requestCode == CHOOSE_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
+            val imageUri = data.data
+            imageUri?.let {
+                this.imageUri = imageUri
+                newHabitIcon.setImageURI(this.imageUri)
             }
-        }
-    }
-
-    private fun tryReadBitmap(data: Uri): Bitmap? {
-        return try {
-            MediaStore.Images.Media.getBitmap(contentResolver, data)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            null
         }
     }
 
